@@ -10,8 +10,8 @@ public class LSB {
 
     public static void main(String[] args) {
         String coverImagePath = "src/com/company/lab1/image.png"; // Путь к контейнеру изображения
-        String message = "Secret message"; // Сообщение, которое нужно спрятать
-        String stegoImagePath = "src/com/company/lab1/image.png"; // Путь для сохранения изображения с сообщением
+        String message = "Secret message!!!!!!"; // Сообщение, которое нужно спрятать
+        String stegoImagePath = "src/com/company/lab1/image_stego.png"; // Путь для сохранения изображения с сообщением
 
         // Скрытие сообщения в изображении
         hideMessage(coverImagePath, message, stegoImagePath);
