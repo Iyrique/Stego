@@ -94,6 +94,7 @@ public class LSB {
     }
 
     private static void hideMessage(String coverImagePath, String message, String stegoImagePath) {
+        double maxAbsoluteError = 0;
         try {
             BufferedImage coverImage = ImageIO.read(new File(coverImagePath));
             int imageWidth = coverImage.getWidth();
@@ -122,17 +123,25 @@ public class LSB {
                 String num = "";
                 for (int j = 7; j >= 0; j--) {
                     int pixel = coverImage.getRGB(index % imageWidth, index / imageWidth);
+                    int oldPixel = pixel;
                     pixel &= 0xFFFFFFFE; // Сбросим младший бит
                     pixel |= ((b >> (7 - j)) & 1); // Установим младший бит в зависимости от байта сообщения
                     num += ((b >> (7 - j)) & 1);
                     coverImage.setRGB(index % imageWidth, index / imageWidth, pixel);
                     index++;
+
+                    // Вычисление MAE
+                    double pixelMAE = calculateMAE(oldPixel, pixel);
+                    if (pixelMAE > maxAbsoluteError) {
+                        maxAbsoluteError = pixelMAE;
+                    }
                 }
             }
 
             // Сохранение изображения с сообщением
             ImageIO.write(coverImage, "png", new File(stegoImagePath));
             System.out.println("Сообщение успешно скрыто в изображении");
+            System.out.println("Максимальное абсолютное отклонение: " + maxAbsoluteError );
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -179,5 +188,23 @@ public class LSB {
             return null;
         }
     }
+
+    // Максимальное абсолютное отклонение (Мю maxD
+    private static double calculateMAE(int originalRGB, int newRGB) {
+        int originalRed = (originalRGB >> 16) & 0xFF;
+        int originalGreen = (originalRGB >> 8) & 0xFF;
+        int originalBlue = originalRGB & 0xFF;
+
+        int newRed = (newRGB >> 16) & 0xFF;
+        int newGreen = (newRGB >> 8) & 0xFF;
+        int newBlue = newRGB & 0xFF;
+
+        double redDiff = Math.abs(originalRed - newRed);
+        double greenDiff = Math.abs(originalGreen - newGreen);
+        double blueDiff = Math.abs(originalBlue - newBlue);
+
+        return Math.max(Math.max(redDiff, greenDiff), blueDiff);
+    }
+
 }
 
