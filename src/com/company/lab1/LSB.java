@@ -4,24 +4,77 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Scanner;
 import javax.imageio.ImageIO;
 
 public class LSB {
 
     public static void main(String[] args) {
-        String coverImagePath = "src/com/company/lab1/image.png"; // Путь к контейнеру изображения
-        String message = "Secret message!!!!!!"; // Сообщение, которое нужно спрятать
-        String stegoImagePath = "src/com/company/lab1/image_stego.png"; // Путь для сохранения изображения с сообщением
+        String coverImagePath = "src/com/company/lab1/image.png";
+        String message = "Secret message!!!!!!";
+        String stegoImagePath = "src/com/company/lab1/image_stego.png";
 
-        // Скрытие сообщения в изображении
-        hideMessage(coverImagePath, message, stegoImagePath);
+        Scanner scanner = new Scanner(System.in);
 
-        // Раскрытие сообщения из изображения
-        String extractedMessage = extractMessage(stegoImagePath);
-        System.out.println("Extracted message: " + extractedMessage);
+        System.out.println("LSB - алгоритм");
+        System.out.println("---------------------------");
+        System.out.print("Выберите, что вы хотите сделать (1. Спрятать; 2. Достать; 3. Спрятать и достать): ");
+        int var = scanner.nextInt();
+        System.out.println();
+        if (var == 1) {
+            System.out.print("Выберите вариант ответа (1. Указать путь до изображения; 2. Взять шаблон): ");
+            if (scanner.nextInt() == 1) {
+                coverImagePath = scanner.nextLine();
+            }
+            System.out.println();
+            System.out.print("Выберите вариант ответа (1. Ввести текст; 2. Взять шаблон): ");
+            if (scanner.nextInt() == 1) {
+                message = scanner.nextLine();
+            }
+            System.out.println();
+            starter(coverImagePath, message, stegoImagePath, true, false);
+        } else if (var == 2) {
+            System.out.print("Выберите вариант ответа (1. Указать путь до изображения; 2. Взять шаблон): ");
+            if (scanner.nextInt() == 1) {
+                stegoImagePath = scanner.nextLine();
+            }
+            System.out.println();
+            starter(coverImagePath, message, stegoImagePath, false, true);
+        } else if (var == 3) {
+            System.out.print("Выберите вариант ответа (1. Указать путь до изображения; 2. Взять шаблон): ");
+            if (scanner.nextInt() == 1) {
+                coverImagePath = scanner.nextLine();
+            }
+            System.out.println();
+            System.out.print("Выберите вариант ответа (1. Ввести текст; 2. Взять шаблон): ");
+            if (scanner.nextInt() == 1) {
+                message = scanner.nextLine();
+            }
+            System.out.println();
+            System.out.print("Выберите вариант ответа (1. Указать путь до изображения; 2. Взять шаблон): ");
+            if (scanner.nextInt() == 1) {
+                stegoImagePath = scanner.nextLine();
+            }
+            System.out.println();
+            starter(coverImagePath, message, stegoImagePath, true, true);
+        } else {
+            System.err.println("Вы ввели не тот вариант ответа! Попробуйте еще раз!");
+        }
+
     }
 
-    public static void hideMessage(String coverImagePath, String message, String stegoImagePath) {
+    private static void starter(String coverImagePath, String message, String stegoImagePath, boolean hide,
+                                boolean extract) {
+        if (hide) {
+            hideMessage(coverImagePath, message, stegoImagePath);
+        }
+        if (extract) {
+            String extractedMessage = extractMessage(stegoImagePath);
+            System.out.println("Extracted message: " + extractedMessage);
+        }
+    }
+
+    private static void hideMessage(String coverImagePath, String message, String stegoImagePath) {
         try {
             BufferedImage coverImage = ImageIO.read(new File(coverImagePath));
             int imageWidth = coverImage.getWidth();
@@ -67,7 +120,7 @@ public class LSB {
     }
 
     // Извлечение сообщения из контейнера изображения
-    public static String extractMessage(String stegoImagePath) {
+    private static String extractMessage(String stegoImagePath) {
         try {
             BufferedImage stegoImage = ImageIO.read(new File(stegoImagePath));
             int imageWidth = stegoImage.getWidth();
