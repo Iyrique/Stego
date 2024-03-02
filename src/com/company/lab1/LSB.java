@@ -24,36 +24,56 @@ public class LSB {
         if (var == 1) {
             System.out.print("Выберите вариант ответа (1. Указать путь до изображения; 2. Взять шаблон): ");
             if (scanner.nextInt() == 1) {
-                coverImagePath = scanner.nextLine();
+                System.out.print("Введите путь: ");
+                if (scanner.hasNextLine()) {
+                    coverImagePath = scanner.next();
+                }
+
             }
             System.out.println();
             System.out.print("Выберите вариант ответа (1. Ввести текст; 2. Взять шаблон): ");
             if (scanner.nextInt() == 1) {
-                message = scanner.nextLine();
+                System.out.print("Введите сообщение: ");
+                if (scanner.hasNextLine()) {
+                    message = scanner.next();
+                }
             }
             System.out.println();
             starter(coverImagePath, message, stegoImagePath, true, false);
         } else if (var == 2) {
             System.out.print("Выберите вариант ответа (1. Указать путь до изображения; 2. Взять шаблон): ");
             if (scanner.nextInt() == 1) {
-                stegoImagePath = scanner.nextLine();
+                System.out.print("Введите путь: ");
+                if (scanner.hasNextLine()) {
+                    stegoImagePath = scanner.next();
+                }
             }
             System.out.println();
             starter(coverImagePath, message, stegoImagePath, false, true);
         } else if (var == 3) {
             System.out.print("Выберите вариант ответа (1. Указать путь до изображения; 2. Взять шаблон): ");
             if (scanner.nextInt() == 1) {
-                coverImagePath = scanner.nextLine();
+                System.out.print("Введите путь: ");
+                if (scanner.hasNextLine()) {
+                    coverImagePath = scanner.next();
+                }
+
             }
             System.out.println();
             System.out.print("Выберите вариант ответа (1. Ввести текст; 2. Взять шаблон): ");
             if (scanner.nextInt() == 1) {
-                message = scanner.nextLine();
+                System.out.print("Введите сообщение: ");
+                if (scanner.hasNextLine()) {
+                    message = scanner.next();
+                }
             }
             System.out.println();
             System.out.print("Выберите вариант ответа (1. Указать путь до изображения; 2. Взять шаблон): ");
             if (scanner.nextInt() == 1) {
-                stegoImagePath = scanner.nextLine();
+                System.out.print("Введите путь: ");
+                if (scanner.hasNextLine()) {
+                    stegoImagePath = scanner.next();
+                }
             }
             System.out.println();
             starter(coverImagePath, message, stegoImagePath, true, true);
@@ -63,8 +83,7 @@ public class LSB {
 
     }
 
-    private static void starter(String coverImagePath, String message, String stegoImagePath, boolean hide,
-                                boolean extract) {
+    private static void starter(String coverImagePath, String message, String stegoImagePath, boolean hide, boolean extract) {
         if (hide) {
             hideMessage(coverImagePath, message, stegoImagePath);
         }
