@@ -77,6 +77,8 @@ public class LSB {
             }
             System.out.println();
             starter(coverImagePath, message, stegoImagePath, true, true);
+            System.out.println("Отношение сигнал шум: " + 1 / calculateNMSE(coverImagePath, stegoImagePath));
+            System.out.println("Пиковое отношение сигнал-шум: " + calculatePSNR(coverImagePath, stegoImagePath));
         } else {
             System.err.println("Вы ввели не тот вариант ответа! Попробуйте еще раз!");
         }
@@ -204,6 +206,100 @@ public class LSB {
         double blueDiff = Math.abs(originalBlue - newBlue);
 
         return Math.max(Math.max(redDiff, greenDiff), blueDiff);
+    }
+
+    private static double calculateNMSE(String originalImagePath, String modifiedImagePath) {
+        double sumSquaredErrors = 0.0;
+
+        try {
+            BufferedImage originalImage = ImageIO.read(new File(originalImagePath));
+            BufferedImage modifiedImage = ImageIO.read(new File(modifiedImagePath));
+
+            int width = originalImage.getWidth();
+            int height = originalImage.getHeight();
+            int sum = 0;
+
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    int originalRGB = originalImage.getRGB(x, y);
+                    int modifiedRGB = modifiedImage.getRGB(x, y);
+
+                    double originalRed = (originalRGB >> 16) & 0xFF;
+                    double originalGreen = (originalRGB >> 8) & 0xFF;
+                    double originalBlue = originalRGB & 0xFF;
+
+                    double modifiedRed = (modifiedRGB >> 16) & 0xFF;
+                    double modifiedGreen = (modifiedRGB >> 8) & 0xFF;
+                    double modifiedBlue = modifiedRGB & 0xFF;
+
+                    double squaredErrorRed = Math.pow(originalRed - modifiedRed, 2);
+                    double squaredErrorGreen = Math.pow(originalGreen - modifiedGreen, 2);
+                    double squaredErrorBlue = Math.pow(originalBlue - modifiedBlue, 2);
+
+                    sum += Math.pow(originalRGB, 2);
+                    sumSquaredErrors += squaredErrorRed + squaredErrorGreen + squaredErrorBlue;
+                }
+            }
+
+            double meanSquaredError = sumSquaredErrors / (width * height * 3);
+            double rootMeanSquaredError = Math.sqrt(meanSquaredError);
+
+            return rootMeanSquaredError / sum; // Нормирование по максимальному значению пикселя
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return -1; // Если возникла ошибка, вернуть -1
+    }
+
+    private static double calculatePSNR(String originalImagePath, String modifiedImagePath) {
+        double ans = 0;
+        double sumSquaredErrors = 0.0;
+        double maxValue = 0;
+        try {
+            BufferedImage originalImage = ImageIO.read(new File(originalImagePath));
+            BufferedImage modifiedImage = ImageIO.read(new File(modifiedImagePath));
+
+            int width = originalImage.getWidth();
+            int height = originalImage.getHeight();
+            ans = width * height;
+            maxValue = Math.pow(originalImage.getRGB(1,1), 2);
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    int originalRGB = originalImage.getRGB(x, y);
+                    int modifiedRGB = modifiedImage.getRGB(x, y);
+
+                    double sqrOrig = Math.pow(originalRGB, 2);
+                    if (sqrOrig > maxValue) {
+                        maxValue = sqrOrig;
+                    }
+
+                    double originalRed = (originalRGB >> 16) & 0xFF;
+                    double originalGreen = (originalRGB >> 8) & 0xFF;
+                    double originalBlue = originalRGB & 0xFF;
+
+                    double modifiedRed = (modifiedRGB >> 16) & 0xFF;
+                    double modifiedGreen = (modifiedRGB >> 8) & 0xFF;
+                    double modifiedBlue = modifiedRGB & 0xFF;
+
+                    double squaredErrorRed = Math.pow(originalRed - modifiedRed, 2);
+                    double squaredErrorGreen = Math.pow(originalGreen - modifiedGreen, 2);
+                    double squaredErrorBlue = Math.pow(originalBlue - modifiedBlue, 2);
+
+
+                    sumSquaredErrors += squaredErrorRed + squaredErrorGreen + squaredErrorBlue;
+                }
+            }
+
+            double meanSquaredError = sumSquaredErrors / (width * height * 3);
+            double rootMeanSquaredError = Math.sqrt(meanSquaredError);
+
+            return ans * maxValue / rootMeanSquaredError;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return -1; // Если возникла ошибка, вернуть -1
     }
 
 }
