@@ -10,9 +10,9 @@ import javax.imageio.ImageIO;
 public class LSB {
 
     public static void main(String[] args) {
-        String coverImagePath = "src/com/company/lab1/image.png";
-        String message = "Secret message!!!!!!";
-        String stegoImagePath = "src/com/company/lab1/image_stego.png";
+        String coverImagePath = "src/com/company/lab1/image.png"; //Ссылка на изображение-шаблон
+        String message = "Secret message!!!!!!"; //Сообщение
+        String stegoImagePath = "src/com/company/lab1/image_stego.png"; //Ссылка на изображение с сообщением
 
         Scanner scanner = new Scanner(System.in);
 
@@ -85,6 +85,7 @@ public class LSB {
 
     }
 
+    //Функция, которая запускает функции скрытия и извлечения сообщения
     private static void starter(String coverImagePath, String message, String stegoImagePath, boolean hide, boolean extract) {
         if (hide) {
             hideMessage(coverImagePath, message, stegoImagePath);
@@ -95,14 +96,15 @@ public class LSB {
         }
     }
 
+    //Функция скрытия сообщения
     private static void hideMessage(String coverImagePath, String message, String stegoImagePath) {
-        double maxAbsoluteError = 0;
+        double maxAbsoluteError = 0; // Максимальное абсолютное отклонение
         try {
-            BufferedImage coverImage = ImageIO.read(new File(coverImagePath));
-            int imageWidth = coverImage.getWidth();
+            BufferedImage coverImage = ImageIO.read(new File(coverImagePath)); //Считываем изображение
+            int imageWidth = coverImage.getWidth(); //Получаем длину и ширину
             int imageHeight = coverImage.getHeight();
-            int maxMessageLength = (imageWidth * imageHeight) / 8;
-            if (message.length() + 8 > maxMessageLength) {
+            int maxMessageLength = (imageWidth * imageHeight) / 8; // получаем максимально возможную длину сообщения
+            if (message.length() + 8 > maxMessageLength) {  //Проверка на то, подойдет ли изображение для сокрытия или нет)
                 System.out.println("Сообщение слишком длинное для данного изображения");
                 return;
             }
@@ -110,18 +112,18 @@ public class LSB {
             // Добавление информации о длине сообщения в изображение
             String messageLengthBinary = String.format("%32s", Integer.toBinaryString(message.length())).replace(' ', '0');
             int index = 0;
-            for (int i = 0; i < 32; i++) {
-                int pixel = coverImage.getRGB(index % imageWidth, index / imageWidth);
+            for (int i = 0; i < 32; i++) { //В первые 32 байта в последний бит записываем информацию о длине изображения
+                int pixel = coverImage.getRGB(index % imageWidth, index / imageWidth); //Получаем пиксель
                 pixel &= 0xFFFFFFFE; // Сбросим младший бит
                 pixel |= (messageLengthBinary.charAt(i) - '0'); // Установим младший бит в зависимости от сообщения
-                coverImage.setRGB(index % imageWidth, index / imageWidth, pixel);
-                index++;
+                coverImage.setRGB(index % imageWidth, index / imageWidth, pixel); //устанавливаем пиксель в результат
+                index++; //Двигаемся дальше
             }
 
             // Скрытие сообщения в изображении
-            byte[] messageBytes = message.getBytes();
-            System.out.println(Arrays.toString(messageBytes));
-            for (byte b : messageBytes) {
+            byte[] messageBytes = message.getBytes(); //Преобразуем сообщение в последовательность байтов
+            System.out.println(Arrays.toString(messageBytes)); //Вывод в консоль для проверки
+            for (byte b : messageBytes) { //Проходим по байтовому представлению сообщения
                 String num = "";
                 for (int j = 7; j >= 0; j--) {
                     int pixel = coverImage.getRGB(index % imageWidth, index / imageWidth);
@@ -132,7 +134,7 @@ public class LSB {
                     coverImage.setRGB(index % imageWidth, index / imageWidth, pixel);
                     index++;
 
-                    // Вычисление MAE
+                    // Вычисление максимального абсолютного отклонения
                     double pixelMAE = calculateMAE(oldPixel, pixel);
                     if (pixelMAE > maxAbsoluteError) {
                         maxAbsoluteError = pixelMAE;
@@ -152,8 +154,8 @@ public class LSB {
     // Извлечение сообщения из контейнера изображения
     private static String extractMessage(String stegoImagePath) {
         try {
-            BufferedImage stegoImage = ImageIO.read(new File(stegoImagePath));
-            int imageWidth = stegoImage.getWidth();
+            BufferedImage stegoImage = ImageIO.read(new File(stegoImagePath)); //Считываем изображение
+            int imageWidth = stegoImage.getWidth(); // Получаем длину изображения
 
             // Извлечение длины сообщения из изображения
             StringBuilder lengthBinary = new StringBuilder();
@@ -163,7 +165,7 @@ public class LSB {
                 lengthBinary.append(pixel & 1); // Извлекаем младший бит
                 index++;
             }
-            int messageLength = Integer.parseInt(lengthBinary.toString(), 2);
+            int messageLength = Integer.parseInt(lengthBinary.toString(), 2); //Преобразуем строку в целочисленный тип
 
             // Извлечение сообщения из изображения
             StringBuilder messageBinary = new StringBuilder();
@@ -184,30 +186,31 @@ public class LSB {
             }
             byte[] messageBytes = extractedMessage.toString().getBytes();
             System.out.println(Arrays.toString(messageBytes));
-            return extractedMessage.toString();
+            return extractedMessage.toString(); //Возвращаем сообщение
         } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    // Максимальное абсолютное отклонение (Мю maxD
+    // Максимальное абсолютное отклонение (Мю maxD)
     private static double calculateMAE(int originalRGB, int newRGB) {
-        int originalRed = (originalRGB >> 16) & 0xFF;
-        int originalGreen = (originalRGB >> 8) & 0xFF;
-        int originalBlue = originalRGB & 0xFF;
+        int originalRed = (originalRGB >> 16) & 0xFF; //Получаем красный в оригинале
+        int originalGreen = (originalRGB >> 8) & 0xFF; //Получаем зеленый в оригинале
+        int originalBlue = originalRGB & 0xFF; //Получаем синий в оригинале
 
-        int newRed = (newRGB >> 16) & 0xFF;
-        int newGreen = (newRGB >> 8) & 0xFF;
-        int newBlue = newRGB & 0xFF;
+        int newRed = (newRGB >> 16) & 0xFF; //Получаем новый красный
+        int newGreen = (newRGB >> 8) & 0xFF; //Получаем новый зеленый
+        int newBlue = newRGB & 0xFF; //Получаем новый синий
 
-        double redDiff = Math.abs(originalRed - newRed);
-        double greenDiff = Math.abs(originalGreen - newGreen);
-        double blueDiff = Math.abs(originalBlue - newBlue);
+        double redDiff = Math.abs(originalRed - newRed); //Считаем разницу
+        double greenDiff = Math.abs(originalGreen - newGreen); //Считаем разницу
+        double blueDiff = Math.abs(originalBlue - newBlue); //Считаем разницу
 
-        return Math.max(Math.max(redDiff, greenDiff), blueDiff);
+        return Math.max(Math.max(redDiff, greenDiff), blueDiff); // возвращаем максимальное
     }
 
+    //ЗДесь считается нормированное среднее отклонение, необходимое для отношения сигнал шум (все как в формуле)
     private static double calculateNMSE(String originalImagePath, String modifiedImagePath) {
         double sumSquaredErrors = 0.0;
 
@@ -252,6 +255,7 @@ public class LSB {
         return -1; // Если возникла ошибка, вернуть -1
     }
 
+    //ЗДесь считается пиковое отношение сигнал-шум (все как в формуле)
     private static double calculatePSNR(String originalImagePath, String modifiedImagePath) {
         double ans = 0;
         double sumSquaredErrors = 0.0;
