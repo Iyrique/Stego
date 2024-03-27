@@ -7,6 +7,95 @@ import java.io.IOException;
 
 public class Metrics {
 
+    public static double calculateMSE(String originalImagePath, String modifiedImagePath) {
+        double sumSquaredErrors = 0.0;
+
+        try {
+            BufferedImage originalImage = ImageIO.read(new File(originalImagePath));
+            BufferedImage modifiedImage = ImageIO.read(new File(modifiedImagePath));
+
+            int width = originalImage.getWidth();
+            int height = originalImage.getHeight();
+            for (int y = 0; y < height; y++) {
+                for (int x = 0; x < width; x++) {
+                    int originalRGB = originalImage.getRGB(x, y);
+                    int modifiedRGB = modifiedImage.getRGB(x, y);
+
+                    double originalRed = (originalRGB >> 16) & 0xFF;
+                    double originalGreen = (originalRGB >> 8) & 0xFF;
+                    double originalBlue = originalRGB & 0xFF;
+
+                    double modifiedRed = (modifiedRGB >> 16) & 0xFF;
+                    double modifiedGreen = (modifiedRGB >> 8) & 0xFF;
+                    double modifiedBlue = modifiedRGB & 0xFF;
+
+                    double squaredErrorRed = Math.pow(originalRed - modifiedRed, 2);
+                    double squaredErrorGreen = Math.pow(originalGreen - modifiedGreen, 2);
+                    double squaredErrorBlue = Math.pow(originalBlue - modifiedBlue, 2);
+                    sumSquaredErrors += squaredErrorRed + squaredErrorGreen + squaredErrorBlue;
+                }
+            }
+
+            double meanSquaredError = sumSquaredErrors / (width * height * 3);
+            double rootMeanSquaredError = Math.sqrt(meanSquaredError);
+
+            return rootMeanSquaredError / width * height;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    //Среднее квадратичное отклонение лапласиана
+    public static double calculateLMSE(String originalImagePath, String modifiedImagePath) {
+        double sumSquaredErrors = 0.0;
+
+        try {
+            BufferedImage originalImage = ImageIO.read(new File(originalImagePath));
+            BufferedImage modifiedImage = ImageIO.read(new File(modifiedImagePath));
+
+            int width = originalImage.getWidth();
+            int height = originalImage.getHeight();
+            int sum = 0;
+
+            for (int y = 1; y < height - 1; y++) {
+                for (int x = 1; x < width - 1; x++) {
+
+                    int originalRGB = originalImage.getRGB(x + 1, y) + originalImage.getRGB(x, y + 1) + originalImage.getRGB(x - 1, y) + originalImage.getRGB(x, y - 1) - 4 * originalImage.getRGB(x, y);
+                    int modifiedRGB = modifiedImage.getRGB(x + 1, y) + modifiedImage.getRGB(x, y + 1) + modifiedImage.getRGB(x - 1, y) + modifiedImage.getRGB(x, y - 1) - 4 * modifiedImage.getRGB(x, y);
+
+                    double originalRed = (originalRGB >> 16) & 0xFF;
+                    double originalGreen = (originalRGB >> 8) & 0xFF;
+                    double originalBlue = originalRGB & 0xFF;
+
+                    double modifiedRed = (modifiedRGB >> 16) & 0xFF;
+                    double modifiedGreen = (modifiedRGB >> 8) & 0xFF;
+                    double modifiedBlue = modifiedRGB & 0xFF;
+
+                    double squaredErrorRed = Math.pow(originalRed - modifiedRed, 2);
+                    double squaredErrorGreen = Math.pow(originalGreen - modifiedGreen, 2);
+                    double squaredErrorBlue = Math.pow(originalBlue - modifiedBlue, 2);
+
+                    sum += Math.pow(originalRGB, 2);
+                    sumSquaredErrors += squaredErrorRed + squaredErrorGreen + squaredErrorBlue;
+                }
+            }
+
+            double meanSquaredError = sumSquaredErrors / (width * height * 3);
+            double rootMeanSquaredError = Math.sqrt(meanSquaredError);
+
+            return rootMeanSquaredError / sum; // Нормирование по максимальному значению пикселя
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return -1;
+    }
+
+    public static double calculateSNR(String originalImagePath, String modifiedImagePath) {
+        return 1 / Metrics.calculateNMSE(originalImagePath, modifiedImagePath);
+    }
+
     // Максимальное абсолютное отклонение (Мю maxD)
     public static double calculateMAE(int originalRGB, int newRGB) {
         int originalRed = (originalRGB >> 16) & 0xFF; //Получаем красный в оригинале

@@ -79,7 +79,7 @@ public class LSB {
             }
             System.out.println();
             starter(coverImagePath, message, stegoImagePath, true, true);
-            System.out.println("Отношение сигнал шум: " + 1 / Metrics.calculateNMSE(coverImagePath, stegoImagePath));
+            System.out.println("Отношение сигнал шум: " + Metrics.calculateSNR(coverImagePath, stegoImagePath));
             System.out.println("Пиковое отношение сигнал-шум: " + Metrics.calculatePSNR(coverImagePath, stegoImagePath));
         } else {
             System.err.println("Вы ввели не тот вариант ответа! Попробуйте еще раз!");
