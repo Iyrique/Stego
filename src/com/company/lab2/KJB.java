@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 public class KJB {
 
     private static final double LAMDA = 1;
+
     private static final int SIGMA = 2;
 
     private static final String LAST_BINARY = "1111111111111110";
@@ -74,7 +75,8 @@ public class KJB {
                 }
             }
         }
-        return BinaryConverter.binaryToString(extractedMessage.toString());
+        String answer = BinaryConverter.binaryToString(extractedMessage.toString());
+        return answer.substring(0, answer.length() - 2);
     }
 
     private static double average(BufferedImage image, int x, int y) {

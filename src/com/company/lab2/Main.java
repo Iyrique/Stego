@@ -9,7 +9,7 @@ import java.io.File;
 public class Main {
 
     public static void main(String[] args) {
-        String message = "SUPER SECRET MESSAGE";
+        String message = "SUPER SECRET MESSAGE!!!";
         BufferedImage image = ImageWorker.loadImage(new File("src/com/company/lab2/image.png"));
 
         BufferedImage embeddedImage = KJB.embedMessage(image, message);
