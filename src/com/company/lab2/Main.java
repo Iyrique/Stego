@@ -4,16 +4,18 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 public class Main {
 
     public static void main(String[] args) {
-        String message = "Secret message";
+        String message = "A";
         BufferedImage image = loadImage(new File("src/com/company/lab2/image.png"));
 
         BufferedImage embeddedImage = KJB.embedMessage(image, message);
 
         saveImage(embeddedImage, "src/com/company/lab2/embedded.png");
+        embeddedImage = loadImage(new File("src/com/company/lab2/embedded.png"));
         System.out.println(KJB.extractMessage(embeddedImage));
     }
 

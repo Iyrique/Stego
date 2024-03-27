@@ -1,35 +1,32 @@
 package com.company.lab2;
 
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 
 public class KJB {
 
-    private static final double LAMDA = 0.1;
+    private static final double LAMDA = 0.00001;
     private static final int SIGMA = 2;
+
+    private static final String LAST_BINARY = "1111111111111110";
 
     public static BufferedImage embedMessage(BufferedImage image, String message) {
         // Преобразование сообщения в двоичный формат
         String binaryMessage = BinaryConverter.stringToBinary(message);
 
-        // Получение длины сообщения
-        int messageLength = binaryMessage.length();
-
-        // Запись длины сообщения в начало
-        String lengthBinary = BinaryConverter.intToBinary(messageLength);
-        while (lengthBinary.length() < 32) { // Для примера, считаем, что длина сообщения не превышает 2^32 - 1
-            lengthBinary = "0" + lengthBinary;
-        }
-        String lengthString = BinaryConverter.binaryToString(lengthBinary);
-        String lengthMessage = BinaryConverter.stringToBinary(lengthString);
-        binaryMessage = lengthMessage + binaryMessage;
+        binaryMessage += LAST_BINARY;
 
         // Получение размеров изображения
         int width = image.getWidth();
         int height = image.getHeight();
+        StringBuilder sb = new StringBuilder();
 
+        int x1 = 0;
+        int y1 = 0;
         outer:
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
+        for (int y = SIGMA; y < height - SIGMA; y += SIGMA + 1) {
+            for (int x = SIGMA; x < width - SIGMA; x += SIGMA + 1) {
                 // Получаем синюю цветовую компоненту пикселя
                 int pixel = image.getRGB(x, y);
                 int red = (pixel >> 16) & 0xFF;
@@ -37,22 +34,23 @@ public class KJB {
                 int blue = pixel & 0xFF;
 
                 // Извлекаем бит сообщения
-                if ((y * width + x) < binaryMessage.length()) {
-                    char msgBit = binaryMessage.charAt(y * width + x);
-
+                if ((y1 * width + x1) < binaryMessage.length()) {
+                    char msgBit = binaryMessage.charAt(y1 * width + x1);
+                    sb.append(msgBit);
                     blue = changeBlueValue(blue, calculateBrightness(red, green, blue), msgBit);
 
-                    // Обеспечиваем, чтобы значение синего оставалось в диапазоне [0, 255]
-                    blue = Math.max(0, Math.min(255, blue));
-
                     // Обновляем пиксель с измененной синей компонентой
-                    pixel = (pixel & 0xff00ffff) | (blue << 16);
+                    pixel = (red << 16) | (green << 8) | blue;
                     image.setRGB(x, y, pixel);
                 } else {
                     break outer;
                 }
+                x1++;
             }
+            y1++;
+            x1 = 0;
         }
+        System.out.println(sb);
         return image;
     }
 
@@ -60,23 +58,50 @@ public class KJB {
         StringBuilder extractedMessage = new StringBuilder();
         int width = image.getWidth();
         int height = image.getHeight();
-
-
-
-        return extractedMessage.toString();
+        outer:
+        for (int y = SIGMA; y < height - SIGMA; y += SIGMA + 1) {
+            for (int x = SIGMA; x < width - SIGMA; x += SIGMA + 1) {
+                int pixel = image.getRGB(x, y);
+                int blue = pixel & 0xFF;
+                if (blue > average(image, x, y)) {
+                    extractedMessage.append(1);
+                } else {
+                    extractedMessage.append(0);
+                }
+                if (extractedMessage.toString().contains(LAST_BINARY)) {
+                    break outer;
+                }
+            }
+        }
+        String answer = BinaryConverter.binaryToString(extractedMessage.toString());
+        return answer;
     }
 
-
+    private static double average(BufferedImage image, int x, int y) {
+        double answer = 0;
+        for (int i = 1; i <= SIGMA; i++) {
+            int pixel1 = image.getRGB(x, y + i);
+            int blue1 = pixel1 & 0xFF;
+            int pixel2 = image.getRGB(x, y - i);
+            int blue2 = pixel2 & 0xFF;
+            int pixel3 = image.getRGB(x + i, y);
+            int blue3 = pixel3 & 0xFF;
+            int pixel4 = image.getRGB(x - i, y);
+            int blue4 = pixel4 & 0xFF;
+            answer += (blue1 + blue2 + blue3 + blue4);
+        }
+        return answer / (4 * SIGMA);
+    }
 
     private static int changeBlueValue(int bxy, double Lxy, char bit) {
         int result;
         if (bit == '1') {
-            result = (int) (bxy - LAMDA * Lxy);
+            result = (int) (bxy + LAMDA * Lxy);
             if (result > 255) {
                 result = 255;
             }
         } else {
-            result = (int) (bxy + LAMDA * Lxy);
+            result = (int) (bxy - LAMDA * Lxy);
             if (result < 0) {
                 result = 0;
             }

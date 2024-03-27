@@ -252,7 +252,7 @@ public class LSB {
             e.printStackTrace();
         }
 
-        return -1; // Если возникла ошибка, вернуть -1
+        return -1;
     }
 
     //ЗДесь считается пиковое отношение сигнал-шум (все как в формуле)
@@ -303,7 +303,7 @@ public class LSB {
             e.printStackTrace();
         }
 
-        return -1; // Если возникла ошибка, вернуть -1
+        return -1;
     }
 
 }
