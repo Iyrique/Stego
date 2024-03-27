@@ -1,4 +1,4 @@
-package com.company.lab2;
+package com.company.utils;
 
 public class BinaryConverter {
 

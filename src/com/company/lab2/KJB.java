@@ -1,12 +1,12 @@
 package com.company.lab2;
 
+import com.company.utils.BinaryConverter;
+
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
 
 public class KJB {
 
-    private static final double LAMDA = 0.00001;
+    private static final double LAMDA = 1;
     private static final int SIGMA = 2;
 
     private static final String LAST_BINARY = "1111111111111110";
@@ -29,6 +29,7 @@ public class KJB {
             for (int x = SIGMA; x < width - SIGMA; x += SIGMA + 1) {
                 // Получаем синюю цветовую компоненту пикселя
                 int pixel = image.getRGB(x, y);
+                int alpha = (pixel >> 24) & 0xFF;
                 int red = (pixel >> 16) & 0xFF;
                 int green = (pixel >> 8) & 0xFF;
                 int blue = pixel & 0xFF;
@@ -40,8 +41,8 @@ public class KJB {
                     blue = changeBlueValue(blue, calculateBrightness(red, green, blue), msgBit);
 
                     // Обновляем пиксель с измененной синей компонентой
-                    pixel = (red << 16) | (green << 8) | blue;
-                    image.setRGB(x, y, pixel);
+                    int newPixel = (alpha << 24) | (red << 16) | (green << 8) | blue;
+                    image.setRGB(x, y, newPixel);
                 } else {
                     break outer;
                 }
@@ -73,8 +74,7 @@ public class KJB {
                 }
             }
         }
-        String answer = BinaryConverter.binaryToString(extractedMessage.toString());
-        return answer;
+        return BinaryConverter.binaryToString(extractedMessage.toString());
     }
 
     private static double average(BufferedImage image, int x, int y) {
